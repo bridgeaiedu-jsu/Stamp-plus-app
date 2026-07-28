@@ -1,0 +1,1723 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>브릿지 커피 사장님 화면</title>
+<style>
+/* ===================================================================
+   [1] 기본 설정 — 손님 화면과 같은 느낌, 색만 조금 진하게
+   =================================================================== */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;              /* 버튼을 빠르게 누를 때 글자가 선택되지 않게 */
+}
+
+/* 휴대폰에서 글자 크기가 제멋대로 커지지 않게, 좌우로 밀리지 않게 */
+html {
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  font-family: '고운돋움', 'Gowun Dodum', '맑은 고딕', 'Malgun Gothic', sans-serif;
+
+  /* 손님 화면보다 조금 진한 색 — 실수로 헷갈리지 않게 */
+  background: linear-gradient(160deg, #3f2c22 0%, #6b4b3a 50%, #a8785c 100%);
+  background-attachment: fixed;
+
+  min-height: 100vh;
+  min-height: 100dvh;           /* 휴대폰 주소창이 오르내려도 화면이 안 흔들리게 */
+  color: #3d2b1f;
+  overflow-x: hidden;
+  display: flex;
+  justify-content: center;
+
+  /* 아이폰 아래쪽 가로줄에 버튼이 가리지 않게 여백을 더해 줍니다 */
+  padding: 20px 14px calc(34px + env(safe-area-inset-bottom));
+}
+
+.빛덩어리 {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.4;
+  z-index: 0;
+  pointer-events: none;
+}
+.빛덩어리.하나 { width: 240px; height: 240px; background: #ffd9a0; top: -70px; left: -80px; }
+.빛덩어리.둘   { width: 230px; height: 230px; background: #ff9d6c; bottom: 20px; right: -90px; }
+
+.화면틀 {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 420px;
+}
+
+/* ===================================================================
+   [2] 유리 카드
+   =================================================================== */
+
+.유리카드 {
+  background: rgba(255, 255, 255, 0.2);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  border-radius: 26px;
+  box-shadow: 0 10px 32px rgba(40, 22, 10, 0.3);
+  padding: 22px 18px;
+  margin-bottom: 16px;
+}
+
+/* ===================================================================
+   [3] 맨 위 머리말
+   =================================================================== */
+
+.머리말 {
+  text-align: center;
+  padding: 22px 18px 20px;
+}
+
+.머리아이콘 { font-size: 34px; line-height: 1; margin-bottom: 8px; }
+
+.머리제목 {
+  font-size: 23px;
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow: 0 2px 10px rgba(40, 22, 10, 0.45);
+  margin-bottom: 6px;
+}
+
+.머리설명 {
+  font-size: 13.5px;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.6;
+}
+
+/* ===================================================================
+   [4] 잠금 화면 (비밀번호)
+   =================================================================== */
+
+.잠금아이콘 { font-size: 46px; text-align: center; line-height: 1; margin-bottom: 12px; }
+
+.잠금제목 {
+  text-align: center;
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow: 0 1px 6px rgba(40, 22, 10, 0.4);
+  margin-bottom: 20px;
+}
+
+/* 비밀번호를 넣은 만큼 점이 채워집니다 */
+.점네개 {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 4px;
+}
+
+.점 {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  transition: all 0.15s;
+}
+
+.점.채움 {
+  background: #ffffff;
+  transform: scale(1.15);
+}
+
+/* ===================================================================
+   [5] 숫자 표시칸 (손님 번호)
+   =================================================================== */
+
+.칸이름 {
+  display: block;
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow: 0 1px 6px rgba(40, 22, 10, 0.4);
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.번호표시 {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.번호한칸 {
+  width: 58px;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  font-weight: 700;
+  color: #4a3323;
+  background: rgba(255, 255, 255, 0.55);
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  border-radius: 16px;
+}
+
+.번호한칸.빈칸 { color: rgba(90, 65, 45, 0.28); }
+
+.번호한칸.지금칸 {
+  border-color: #ffffff;
+  background: rgba(255, 255, 255, 0.78);
+}
+
+/* ===================================================================
+   [6] 숫자 키패드 — 바쁠 때 빠르게 누를 수 있게 크게
+   =================================================================== */
+
+.키패드 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.키 {
+  min-height: 64px;
+  font-family: inherit;
+  font-size: 28px;
+  font-weight: 700;
+  color: #4a3323;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  border-radius: 18px;
+  box-shadow: 0 4px 12px rgba(40, 22, 10, 0.2);
+  cursor: pointer;
+  transition: transform 0.08s, background 0.08s;
+}
+
+.키:active {
+  transform: scale(0.94);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.키.글자키 {
+  font-size: 17px;
+  background: rgba(255, 255, 255, 0.4);
+  color: #5a3b26;
+}
+
+/* ===================================================================
+   [7] 큰 버튼들 — 색으로 바로 구분되게
+   =================================================================== */
+
+.동작버튼모음 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.동작버튼 {
+  width: 100%;
+  min-height: 76px;
+  padding: 10px 12px;           /* 글자가 버튼 끝에 닿지 않게 */
+  font-family: inherit;
+  font-size: 23px;
+  font-weight: 700;
+  line-height: 1.35;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(40, 22, 10, 0.28);
+  transition: transform 0.1s, opacity 0.15s;
+}
+
+.동작버튼:active { transform: scale(0.97); }
+
+/* 적립 — 초록색 (제일 많이 누르는 버튼) */
+.동작버튼.적립 {
+  background: linear-gradient(145deg, #6fc48a, #3f9d63);
+  color: #ffffff;
+  text-shadow: 0 1px 4px rgba(0, 60, 25, 0.35);
+}
+
+/* 취소 — 회색, 조금 작게 (실수했을 때만 쓰는 버튼) */
+.동작버튼.취소 {
+  min-height: 62px;
+  font-size: 19px;
+  background: rgba(255, 255, 255, 0.35);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  text-shadow: 0 1px 4px rgba(40, 22, 10, 0.4);
+  box-shadow: none;
+}
+
+/* 사용 완료 — 주황색 */
+.동작버튼.사용완료 {
+  background: linear-gradient(145deg, #ffb463, #f08a3c);
+  color: #ffffff;
+  text-shadow: 0 1px 4px rgba(90, 45, 0, 0.35);
+}
+
+/* 못 누르는 상태 */
+.동작버튼:disabled {
+  opacity: 0.4;
+  cursor: default;
+  box-shadow: none;
+}
+
+/* 번호를 다 넣기 전에 보이는 안내 */
+.잠김안내 {
+  display: none;
+  margin-top: 16px;
+  padding: 11px 12px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(90, 55, 35, 0.28);
+  border: 1px dashed rgba(255, 255, 255, 0.4);
+  border-radius: 14px;
+  text-shadow: 0 1px 4px rgba(40, 22, 10, 0.4);
+}
+
+.잠김안내.보임 { display: block; }
+
+/* 작은 버튼 (잠그기 등) */
+.작은버튼 {
+  width: 100%;
+  min-height: 52px;
+  padding: 8px 12px;            /* 글자가 버튼 끝에 닿지 않게 */
+  line-height: 1.35;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 16px;
+  text-shadow: 0 1px 4px rgba(40, 22, 10, 0.4);
+  cursor: pointer;
+}
+
+.작은버튼:active { transform: scale(0.97); }
+
+/* ===================================================================
+   [8] 안내말 (오류 / 알림)
+   =================================================================== */
+
+.알림말 {
+  display: none;
+  margin-top: 12px;
+  padding: 12px 14px;
+  font-size: 14.5px;
+  line-height: 1.55;
+  text-align: center;
+  border-radius: 14px;
+}
+
+.알림말.보임 { display: block; animation: 흔들기 0.3s; }
+
+.알림말.빨강 {
+  color: #7d2b2b;
+  background: rgba(255, 226, 226, 0.85);
+  border: 1px solid rgba(255, 160, 160, 0.7);
+}
+
+.알림말.초록 {
+  color: #1d5c37;
+  background: rgba(214, 245, 224, 0.85);
+  border: 1px solid rgba(140, 210, 165, 0.8);
+}
+
+@keyframes 흔들기 {
+  0%, 100% { transform: translateX(0); }
+  25%      { transform: translateX(-5px); }
+  75%      { transform: translateX(5px); }
+}
+
+/* ===================================================================
+   [9] 결과 카드 — 지금 몇 개인지 보여 주는 곳
+   =================================================================== */
+
+.결과카드 { display: none; text-align: center; }
+.결과카드.보임 { display: block; animation: 스르륵 0.3s; }
+
+.결과번호 {
+  font-size: 14.5px;
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 1px 5px rgba(40, 22, 10, 0.4);
+  margin-bottom: 8px;
+}
+
+.결과개수 {
+  font-size: 46px;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.2;
+  text-shadow: 0 2px 12px rgba(40, 22, 10, 0.45);
+}
+
+.결과개수 .단위 { font-size: 24px; }
+
+.결과변화 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffe6b8;
+  text-shadow: 0 1px 6px rgba(40, 22, 10, 0.4);
+  margin-top: 2px;
+  min-height: 22px;
+}
+
+/* 작은 동그라미 10개를 한 줄로 */
+.작은스탬프판 {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 5px;
+  margin-top: 16px;
+}
+
+.작은동그라미 {
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+}
+
+.작은동그라미.빈칸 {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1.5px dashed rgba(255, 255, 255, 0.5);
+}
+
+.작은동그라미.채움 {
+  background: linear-gradient(145deg, #ffe6b8, #f0a868);
+  border: 1.5px solid rgba(255, 255, 255, 0.9);
+}
+
+/* ===================================================================
+   [10] 무료 음료 대상 알림 카드
+   =================================================================== */
+
+.대상카드 {
+  display: none;
+  text-align: center;
+  background: rgba(255, 200, 130, 0.32);
+  border: 2px solid rgba(255, 220, 170, 0.85);
+  box-shadow: 0 8px 26px rgba(180, 100, 20, 0.35);
+}
+
+.대상카드.보임 { display: block; animation: 스르륵 0.3s; }
+
+.대상아이콘 {
+  font-size: 44px;
+  line-height: 1;
+  margin-bottom: 10px;
+  animation: 살짝통통 2s ease-in-out infinite;
+}
+
+@keyframes 살짝통통 {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
+}
+
+.대상제목 {
+  font-size: 22px;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.45;
+  text-shadow: 0 2px 10px rgba(120, 60, 0, 0.5);
+  margin-bottom: 8px;
+}
+
+.대상설명 {
+  font-size: 14.5px;
+  color: rgba(255, 255, 255, 0.95);
+  line-height: 1.6;
+  text-shadow: 0 1px 5px rgba(120, 60, 0, 0.4);
+  margin-bottom: 18px;
+}
+
+/* ===================================================================
+   [11] 정말 하시겠어요? 확인 창
+   =================================================================== */
+
+.덮개 {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(35, 20, 10, 0.6);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  z-index: 50;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.덮개.보임 { display: flex; }
+
+.확인창 {
+  width: 100%;
+  max-width: 340px;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 24px;
+  padding: 26px 20px 20px;
+  text-align: center;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.4);
+}
+
+.확인제목 {
+  font-size: 19px;
+  font-weight: 700;
+  color: #4a3323;
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+.확인설명 {
+  font-size: 14px;
+  color: #7a5c46;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.확인버튼줄 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.확인버튼 {
+  min-height: 58px;
+  font-family: inherit;
+  font-size: 17px;
+  font-weight: 700;
+  border-radius: 16px;
+  border: none;
+  cursor: pointer;
+}
+
+.확인버튼.그만 { background: #eae0d8; color: #6b5344; }
+.확인버튼.진행 { background: linear-gradient(145deg, #ffb463, #f08a3c); color: #ffffff; }
+.확인버튼:active { transform: scale(0.97); }
+
+/* ===================================================================
+   [12] 맨 아래 — 오늘 적립 횟수
+   =================================================================== */
+
+.오늘카드 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+}
+
+.오늘이름 {
+  font-size: 14.5px;
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 1px 5px rgba(40, 22, 10, 0.4);
+  line-height: 1.5;
+}
+
+.오늘이름 .날짜 { font-size: 12px; opacity: 0.8; }
+
+.오늘숫자 {
+  font-size: 30px;
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow: 0 2px 10px rgba(40, 22, 10, 0.45);
+}
+
+.오늘숫자 .단위 { font-size: 16px; }
+
+/* ===================================================================
+   [12-1] 손님 화면 되돌리기 버튼
+   =================================================================== */
+
+.되돌리기버튼 {
+  background: rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  min-height: 58px;
+  font-size: 17px;
+  margin-bottom: 6px;
+}
+
+.되돌리기설명 {
+  text-align: center;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.75);
+  margin-bottom: 16px;
+}
+
+/* ===================================================================
+   [12-2] 백업 카드 — 스탬프를 파일로 내보내고 되살리는 곳
+   =================================================================== */
+
+.백업제목 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow: 0 1px 6px rgba(40, 22, 10, 0.4);
+  margin-bottom: 6px;
+}
+
+.백업설명 {
+  font-size: 13px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.85);
+  text-shadow: 0 1px 4px rgba(40, 22, 10, 0.35);
+  margin-bottom: 14px;
+}
+
+.백업버튼 { margin-bottom: 9px; }
+
+/* 가장 자주 쓰는 내려받기 버튼은 조금 더 눈에 띄게 */
+.강조버튼 {
+  background: rgba(255, 255, 255, 0.42);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  min-height: 58px;
+  font-size: 17px;
+}
+
+.백업꼬리말 {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.28);
+  font-size: 12px;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.72);
+  text-align: center;
+}
+
+/* ===================================================================
+   [13] 화면 바꾸기 / 공통
+   =================================================================== */
+
+.화면 { display: none; }
+.화면.보임 { display: block; animation: 스르륵 0.35s; }
+
+@keyframes 스르륵 {
+  0%   { opacity: 0; transform: translateY(12px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.맨아래말 {
+  text-align: center;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.65);
+  line-height: 1.7;
+  margin-top: 10px;
+}
+
+/* 조금 좁은 휴대폰 (갤럭시 A, 아이폰 미니 등) — 긴 글자가 두 줄이 되지 않게 */
+@media (max-width: 365px) {
+  .머리제목       { font-size: 19.5px; }
+  .작은버튼       { font-size: 15px; }
+  .강조버튼,
+  .되돌리기버튼   { font-size: 15.5px; }
+  .대상제목       { font-size: 20px; }
+}
+
+/* 아주 좁은 휴대폰 */
+@media (max-width: 340px) {
+  .번호한칸     { width: 50px; height: 60px; font-size: 27px; }
+  .키           { min-height: 56px; font-size: 25px; }
+  .동작버튼     { min-height: 68px; font-size: 20px; }
+  .결과개수     { font-size: 40px; }
+
+  /* 카드 안쪽 여백을 줄여 자리를 벌어 줍니다 */
+  .유리카드     { padding: 20px 14px; }
+  .머리말       { padding: 20px 14px 18px; }
+  .작은스탬프판 { gap: 3px; }
+  .확인창       { padding: 24px 16px 18px; }
+}
+</style>
+</head>
+<body>
+
+<div class="빛덩어리 하나"></div>
+<div class="빛덩어리 둘"></div>
+
+<div class="화면틀">
+
+  <!-- ================= 화면 1 : 비밀번호 잠금 ================= -->
+  <div class="화면 보임" id="화면-잠금">
+    <div class="유리카드">
+      <div class="잠금아이콘">🔒</div>
+      <div class="잠금제목">사장님 화면입니다<br>비밀번호 4자리를 넣어 주세요</div>
+
+      <div class="점네개" id="점네개">
+        <div class="점"></div>
+        <div class="점"></div>
+        <div class="점"></div>
+        <div class="점"></div>
+      </div>
+
+      <div class="알림말 빨강" id="잠금알림"></div>
+
+      <div class="키패드" id="잠금키패드"></div>
+    </div>
+
+    <div class="맨아래말">
+      이 화면은 사장님만 사용하는 화면이에요.<br>
+      손님에게는 index.html 파일만 보여 주세요.
+    </div>
+  </div>
+
+  <!-- ================= 화면 2 : 적립 화면 ================= -->
+  <div class="화면" id="화면-적립">
+
+    <div class="유리카드 머리말">
+      <div class="머리아이콘">☕</div>
+      <div class="머리제목">브릿지 커피 · 사장님 화면</div>
+      <div class="머리설명">손님 번호 뒷 4자리를 넣고 적립해 주세요</div>
+    </div>
+
+    <!-- 번호 넣는 곳 -->
+    <div class="유리카드">
+      <span class="칸이름">손님 휴대폰 뒷 4자리</span>
+
+      <div class="번호표시" id="번호표시">
+        <div class="번호한칸 빈칸">-</div>
+        <div class="번호한칸 빈칸">-</div>
+        <div class="번호한칸 빈칸">-</div>
+        <div class="번호한칸 빈칸">-</div>
+      </div>
+
+      <div class="키패드" id="적립키패드"></div>
+
+      <!-- 4자리를 다 넣기 전에는 이 안내가 보입니다 -->
+      <div class="잠김안내" id="잠김안내">🔢 숫자 4자리를 모두 넣으면 버튼이 켜져요</div>
+
+      <div class="동작버튼모음">
+        <button class="동작버튼 적립" id="적립버튼" disabled>적립 &nbsp;+1</button>
+        <button class="동작버튼 취소" id="취소버튼" disabled>실수했어요 &nbsp;−1</button>
+      </div>
+
+      <div class="알림말" id="적립알림"></div>
+    </div>
+
+    <!-- 지금 몇 개인지 보여 주는 카드 -->
+    <div class="유리카드 결과카드" id="결과카드">
+      <div class="결과번호" id="결과번호"></div>
+      <div class="결과개수" id="결과개수"></div>
+      <div class="결과변화" id="결과변화"></div>
+      <div class="작은스탬프판" id="작은스탬프판"></div>
+    </div>
+
+    <!-- 10개를 다 모았을 때 뜨는 카드 -->
+    <div class="유리카드 대상카드" id="대상카드">
+      <div class="대상아이콘">🎁</div>
+      <div class="대상제목">무료 음료<br>제공 대상입니다</div>
+      <div class="대상설명" id="대상설명"></div>
+      <button class="동작버튼 사용완료" id="사용완료버튼">무료 음료 드림 · 사용 완료</button>
+    </div>
+
+    <!-- 다음 손님을 위해 손님 화면을 첫 화면으로 되돌리기 -->
+    <button class="작은버튼 되돌리기버튼" id="손님화면되돌리기버튼">📱 손님 화면 처음으로 되돌리기</button>
+    <div class="되돌리기설명">
+      대기 손님이 있을 때 눌러 주세요.<br>
+      손님 화면이 1초 안에 번호 입력 화면으로 바뀝니다.
+    </div>
+
+    <!-- 오늘 적립한 횟수 -->
+    <div class="유리카드 오늘카드">
+      <div class="오늘이름">
+        오늘 적립한 횟수<br>
+        <span class="날짜" id="오늘날짜"></span>
+      </div>
+      <div class="오늘숫자"><span id="오늘횟수">0</span><span class="단위">회</span></div>
+    </div>
+
+    <!-- 백업 / 되살리기 -->
+    <div class="유리카드">
+      <div class="백업제목">💾 스탬프 백업</div>
+      <div class="백업설명">
+        폰을 바꾸거나 브라우저 기록을 지우면 스탬프가 사라져요.<br>
+        <b>일주일에 한 번</b> 내려받아 두세요.
+      </div>
+
+      <button class="작은버튼 백업버튼 강조버튼" id="엑셀내려받기버튼">⬇️ 내려받기 (엑셀로 열려요)</button>
+      <button class="작은버튼 백업버튼" id="내보내기버튼">💾 백업 파일로 내보내기</button>
+      <button class="작은버튼 백업버튼" id="불러오기버튼">📂 파일에서 되살리기</button>
+
+      <!-- 파일 고르는 칸 (눈에 보이지 않게 숨겨 둡니다) -->
+      <input type="file" id="백업파일칸" accept=".csv,.json,text/csv,application/json" style="display:none">
+
+      <div class="알림말" id="백업알림"></div>
+
+      <div class="백업꼬리말">
+        내려받은 파일에는 <b>손님 전체의 뒷 4자리 명단</b>이 들어 있어요.<br>
+        아무 데나 보내지 마시고, 옛날 파일은 지워 주세요.
+      </div>
+    </div>
+
+    <button class="작은버튼" id="잠그기버튼">🔒 화면 잠그기</button>
+
+    <div class="맨아래말">
+      스탬프는 이 기기의 이 브라우저에만 저장됩니다.<br>
+      ① 손님 화면(index.html)도 <b>같은 브라우저</b>로 열어 주세요.<br>
+      ② 시크릿 모드로 열지 마세요.<br>
+      ③ "쿠키 및 사이트 데이터 삭제"를 하면 스탬프가 지워집니다.
+    </div>
+  </div>
+
+</div>
+
+<!-- ================= 정말 하시겠어요? 확인 창 ================= -->
+<div class="덮개" id="덮개">
+  <div class="확인창">
+    <div class="확인제목" id="확인제목"></div>
+    <div class="확인설명" id="확인설명"></div>
+    <div class="확인버튼줄">
+      <button class="확인버튼 그만" id="확인그만">아니요</button>
+      <button class="확인버튼 진행" id="확인진행">네</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===================================================================
+   ★★★ 여기만 바꾸시면 비밀번호가 바뀝니다 ★★★
+
+   아래 작은따옴표 안의 1234를 원하는 숫자 4자리로 바꿔 주세요.
+   예)  var 사장님비밀번호 = '7942';
+
+   ⚠️ 주의
+   이 비밀번호는 '손님이 실수로 들어오는 것'을 막는 정도입니다.
+   컴퓨터를 잘 아는 사람은 이 파일을 열어서 볼 수 있어요.
+   은행이나 다른 곳에서 쓰는 비밀번호는 절대 쓰지 마세요.
+   =================================================================== */
+
+var 사장님비밀번호 = '1234';
+
+/* =================================================================== */
+
+
+var 스탬프총개수 = 10;                        // 무료 음료에 필요한 개수
+var 저장이름_스탬프 = '브릿지커피_스탬프';      // 브라우저에 저장할 때 쓰는 이름
+var 저장이름_오늘   = '브릿지커피_오늘적립';
+var 저장이름_마지막 = '브릿지커피_마지막적립';  // 손님별로 마지막에 적립한 시각 (10분만 잠깐)
+var 저장이름_마지막날짜 = '브릿지커피_마지막적립날짜';  // 손님별로 마지막에 적립한 '날짜' (계속 보관)
+var 저장이름_되돌리기 = '브릿지커피_손님화면되돌리기';  // 손님 화면에 보내는 신호
+
+// 같은 손님에게 이 시간 안에 또 적립하면 '방금 적립했어요' 하고 물어봅니다
+var 겹침막는시간 = 60 * 1000;                 // 60초 (1분)
+
+var 넣은비밀번호 = '';    // 잠금 화면에서 지금까지 누른 숫자
+var 넣은번호     = '';    // 적립 화면에서 지금까지 누른 손님 번호
+
+
+/* ===================================================================
+   [가] 브라우저에 저장하고 불러오기
+
+   localStorage 라는 곳에 저장합니다.
+   쉽게 말하면 '이 브라우저 안에 있는 작은 수첩'이에요.
+   =================================================================== */
+
+function 스탬프전체불러오기() {
+  try {
+    var 글자 = localStorage.getItem(저장이름_스탬프);
+    if (!글자) return {};
+    return JSON.parse(글자);
+  } catch (오류) {
+    return {};     // 수첩이 망가졌으면 빈 수첩으로 시작합니다
+  }
+}
+
+function 스탬프전체저장하기(전체) {
+  try {
+    localStorage.setItem(저장이름_스탬프, JSON.stringify(전체));
+    return true;
+  } catch (오류) {
+    알림보이기('적립알림', '빨강', '저장에 실패했어요. 브라우저의 비밀 모드에서는 저장이 안 될 수 있어요.');
+    return false;
+  }
+}
+
+function 개수읽기(번호) {
+  var 전체 = 스탬프전체불러오기();
+  var 개수 = 전체[번호];
+  if (typeof 개수 !== 'number' || 개수 < 0) return 0;
+  return 개수;
+}
+
+function 개수쓰기(번호, 개수) {
+  var 전체 = 스탬프전체불러오기();
+  if (개수 <= 0) {
+    delete 전체[번호];          // 0개면 굳이 남겨 두지 않습니다
+  } else {
+    전체[번호] = 개수;
+  }
+  스탬프전체저장하기(전체);
+}
+
+
+/* ===================================================================
+   [나-1] 마지막으로 적립한 시각 기억하기
+
+   같은 손님에게 1분 안에 두 번 누르는 실수를 막기 위해,
+   손님별로 '마지막에 적립한 시각'을 적어 둡니다.
+   =================================================================== */
+
+function 마지막적립전체불러오기() {
+  try {
+    var 글자 = localStorage.getItem(저장이름_마지막);
+    if (!글자) return {};
+    return JSON.parse(글자);
+  } catch (오류) {
+    return {};
+  }
+}
+
+function 마지막적립시각읽기(번호) {
+  var 전체 = 마지막적립전체불러오기();
+  var 시각 = 전체[번호];
+  if (typeof 시각 !== 'number') return 0;
+  return 시각;
+}
+
+function 마지막적립시각쓰기(번호, 시각) {
+  var 전체 = 마지막적립전체불러오기();
+
+  // 오래된 기록은 지워서 수첩이 무거워지지 않게 합니다
+  var 지금 = new Date().getTime();
+  for (var 열쇠 in 전체) {
+    if (지금 - 전체[열쇠] > 겹침막는시간 * 10) delete 전체[열쇠];
+  }
+
+  if (시각 === 0) {
+    delete 전체[번호];
+  } else {
+    전체[번호] = 시각;
+  }
+
+  try {
+    localStorage.setItem(저장이름_마지막, JSON.stringify(전체));
+  } catch (오류) { /* 저장이 안 되어도 화면은 계속 씁니다 */ }
+}
+
+
+/* ===================================================================
+   [나-2] 마지막으로 적립한 '날짜' 기억하기
+
+   위의 [나-1]은 10분만 잠깐 기억하는 것이라서,
+   내려받기 파일에 넣을 날짜는 여기에 따로 적어 둡니다.
+   시각(몇 시 몇 분)은 적지 않고 날짜만 적습니다.
+   =================================================================== */
+
+function 마지막날짜전체불러오기() {
+  try {
+    var 글자 = localStorage.getItem(저장이름_마지막날짜);
+    if (!글자) return {};
+    var 전체 = JSON.parse(글자);
+    if (!전체 || typeof 전체 !== 'object') return {};
+    return 전체;
+  } catch (오류) {
+    return {};
+  }
+}
+
+function 마지막날짜읽기(번호) {
+  var 날짜 = 마지막날짜전체불러오기()[번호];
+  return (typeof 날짜 === 'string') ? 날짜 : '';
+}
+
+/* 날짜글자를 빈칸('')으로 넣으면 그 손님의 날짜를 지웁니다 */
+function 마지막날짜쓰기(번호, 날짜글자) {
+  var 전체 = 마지막날짜전체불러오기();
+
+  if (날짜글자) {
+    전체[번호] = 날짜글자;
+  } else {
+    delete 전체[번호];
+  }
+
+  try {
+    localStorage.setItem(저장이름_마지막날짜, JSON.stringify(전체));
+  } catch (오류) { /* 저장이 안 되어도 화면은 계속 씁니다 */ }
+}
+
+function 마지막날짜전체저장하기(전체) {
+  try {
+    localStorage.setItem(저장이름_마지막날짜, JSON.stringify(전체));
+  } catch (오류) { /* 저장이 안 되어도 화면은 계속 씁니다 */ }
+}
+
+
+/* ===================================================================
+   [나] 오늘 적립한 횟수 세기
+   날짜가 바뀌면 저절로 0부터 다시 셉니다.
+   =================================================================== */
+
+function 오늘날짜글자() {
+  var 지금 = new Date();
+  var 달 = ('0' + (지금.getMonth() + 1)).slice(-2);
+  var 일 = ('0' + 지금.getDate()).slice(-2);
+  return 지금.getFullYear() + '-' + 달 + '-' + 일;
+}
+
+function 오늘기록불러오기() {
+  var 기본 = { 날짜: 오늘날짜글자(), 횟수: 0 };
+  try {
+    var 글자 = localStorage.getItem(저장이름_오늘);
+    if (!글자) return 기본;
+
+    var 기록 = JSON.parse(글자);
+    if (!기록 || 기록.날짜 !== 오늘날짜글자()) return 기본;   // 어제 것이면 새로 시작
+    if (typeof 기록.횟수 !== 'number') return 기본;
+    return 기록;
+  } catch (오류) {
+    return 기본;
+  }
+}
+
+function 오늘횟수바꾸기(더할값) {
+  var 기록 = 오늘기록불러오기();
+  기록.횟수 = 기록.횟수 + 더할값;
+  if (기록.횟수 < 0) 기록.횟수 = 0;
+  기록.날짜 = 오늘날짜글자();
+
+  try {
+    localStorage.setItem(저장이름_오늘, JSON.stringify(기록));
+  } catch (오류) { /* 저장이 안 되어도 화면은 계속 씁니다 */ }
+
+  오늘화면새로그리기();
+}
+
+function 오늘화면새로그리기() {
+  var 기록 = 오늘기록불러오기();
+  document.getElementById('오늘횟수').textContent = 기록.횟수;
+
+  var 조각 = 기록.날짜.split('-');
+  document.getElementById('오늘날짜').textContent = 조각[1] + '월 ' + 조각[2] + '일';
+}
+
+
+/* ===================================================================
+   [다] 화면 바꾸기 / 알림 보이기
+   =================================================================== */
+
+function 화면보이기(화면이름) {
+  var 모든화면 = document.querySelectorAll('.화면');
+  for (var i = 0; i < 모든화면.length; i++) {
+    모든화면[i].classList.remove('보임');
+  }
+  document.getElementById(화면이름).classList.add('보임');
+  window.scrollTo(0, 0);
+}
+
+function 알림보이기(칸이름, 색깔, 글) {
+  var 칸 = document.getElementById(칸이름);
+  칸.className = '알림말 ' + 색깔;
+  칸.textContent = 글;
+  void 칸.offsetWidth;
+  칸.classList.add('보임');
+}
+
+function 알림숨기기(칸이름) {
+  document.getElementById(칸이름).classList.remove('보임');
+}
+
+/* 버튼을 누를 때 폰이 살짝 떨리게 (되는 기기에서만) */
+function 짧게떨기(길이) {
+  if (navigator.vibrate) {
+    try { navigator.vibrate(길이); } catch (오류) {}
+  }
+}
+
+
+/* ===================================================================
+   [라] 숫자 키패드 만들기
+
+   같은 모양의 키패드를 잠금 화면과 적립 화면에 각각 놓습니다.
+   =================================================================== */
+
+function 키패드만들기(놓을곳이름, 숫자눌렀을때, 지우기눌렀을때, 전체지우기눌렀을때) {
+  var 놓을곳 = document.getElementById(놓을곳이름);
+  놓을곳.innerHTML = '';
+
+  var 숫자들 = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
+
+  for (var i = 0; i < 숫자들.length; i++) {
+    놓을곳.appendChild(키하나만들기(숫자들[i], '키', 숫자눌렀을때, 숫자들[i]));
+  }
+
+  놓을곳.appendChild(키하나만들기('전체 지움', '키 글자키', 전체지우기눌렀을때, null));
+  놓을곳.appendChild(키하나만들기('0', '키', 숫자눌렀을때, '0'));
+  놓을곳.appendChild(키하나만들기('⌫ 지우기', '키 글자키', 지우기눌렀을때, null));
+}
+
+function 키하나만들기(글, 반, 눌렀을때, 값) {
+  var 버튼 = document.createElement('button');
+  버튼.type = 'button';
+  버튼.className = 반;
+  버튼.textContent = 글;
+  버튼.onclick = function () {
+    짧게떨기(12);
+    눌렀을때(값);
+  };
+  return 버튼;
+}
+
+
+/* ===================================================================
+   [마] 잠금 화면 — 비밀번호 넣기
+   =================================================================== */
+
+function 비밀번호점그리기() {
+  var 점들 = document.getElementById('점네개').children;
+  for (var i = 0; i < 점들.length; i++) {
+    if (i < 넣은비밀번호.length) {
+      점들[i].classList.add('채움');
+    } else {
+      점들[i].classList.remove('채움');
+    }
+  }
+}
+
+function 비밀번호숫자누름(숫자) {
+  if (넣은비밀번호.length >= 4) return;
+
+  넣은비밀번호 = 넣은비밀번호 + 숫자;
+  알림숨기기('잠금알림');
+  비밀번호점그리기();
+
+  // 네 자리를 다 넣으면 저절로 확인합니다
+  if (넣은비밀번호.length === 4) {
+    setTimeout(비밀번호확인, 180);
+  }
+}
+
+function 비밀번호확인() {
+  if (넣은비밀번호 === String(사장님비밀번호)) {
+    넣은비밀번호 = '';
+    비밀번호점그리기();
+    적립화면열기();
+  } else {
+    알림보이기('잠금알림', '빨강', '비밀번호가 달라요. 다시 넣어 주세요.');
+    짧게떨기([40, 60, 40]);
+    넣은비밀번호 = '';
+    비밀번호점그리기();
+  }
+}
+
+
+/* ===================================================================
+   [바] 적립 화면 — 손님 번호 넣기
+   =================================================================== */
+
+function 적립화면열기() {
+  넣은번호 = '';
+  번호화면그리기();
+  결과숨기기();
+  알림숨기기('적립알림');
+  알림숨기기('백업알림');
+  오늘화면새로그리기();
+  화면보이기('화면-적립');
+}
+
+function 번호화면그리기() {
+  var 칸들 = document.getElementById('번호표시').children;
+
+  for (var i = 0; i < 4; i++) {
+    var 칸 = 칸들[i];
+    칸.className = '번호한칸';
+
+    if (i < 넣은번호.length) {
+      칸.textContent = 넣은번호.charAt(i);
+    } else {
+      칸.textContent = '-';
+      칸.classList.add('빈칸');
+      if (i === 넣은번호.length) 칸.classList.add('지금칸');   // 다음에 들어갈 자리 표시
+    }
+  }
+
+  // 네 자리를 다 넣어야 적립·취소 버튼을 누를 수 있습니다
+  var 다넣었나 = (넣은번호.length === 4);
+  document.getElementById('적립버튼').disabled = !다넣었나;
+  document.getElementById('취소버튼').disabled = !다넣었나;
+
+  // 아직 다 안 넣었으면 안내를 보여 줍니다
+  var 안내 = document.getElementById('잠김안내');
+  if (다넣었나) {
+    안내.classList.remove('보임');
+  } else {
+    안내.classList.add('보임');
+  }
+}
+
+function 번호숫자누름(숫자) {
+  if (넣은번호.length >= 4) return;
+  넣은번호 = 넣은번호 + 숫자;
+  알림숨기기('적립알림');
+  번호화면그리기();
+}
+
+function 번호한글자지움() {
+  넣은번호 = 넣은번호.slice(0, -1);
+  알림숨기기('적립알림');
+  번호화면그리기();
+}
+
+function 번호전체지움() {
+  넣은번호 = '';
+  알림숨기기('적립알림');
+  결과숨기기();
+  번호화면그리기();
+}
+
+
+/* ===================================================================
+   [사] 적립하기 / 취소하기
+   =================================================================== */
+
+function 적립하기() {
+
+  /* [막는 장치 1] 번호가 4자리가 아니면 아예 진행하지 않습니다.
+     (버튼도 꺼져 있지만, 혹시 모르니 여기서 한 번 더 막아 둡니다) */
+  if (넣은번호.length !== 4) {
+    알림보이기('적립알림', '빨강', '손님 번호 4자리를 모두 넣어 주세요.');
+    짧게떨기([40, 60, 40]);
+    return;
+  }
+
+  var 지금개수 = 개수읽기(넣은번호);
+
+  // 이미 10개면 더 올리지 않고, 먼저 사용 완료를 누르게 안내합니다
+  if (지금개수 >= 스탬프총개수) {
+    결과보이기(넣은번호, 지금개수, '');
+    알림보이기('적립알림', '빨강',
+      '이미 ' + 스탬프총개수 + '개예요. 무료 음료를 드린 뒤 아래 [사용 완료]를 눌러 주세요.');
+    짧게떨기([40, 60, 40]);
+    return;
+  }
+
+  /* [막는 장치 2] 같은 손님에게 1분 안에 또 적립하려고 하면 한 번 물어봅니다.
+     버튼을 두 번 눌렀거나, 다른 직원이 이미 적립한 경우를 잡아 줍니다. */
+  var 지금시각   = new Date().getTime();
+  var 마지막시각 = 마지막적립시각읽기(넣은번호);
+  var 지난시간   = 지금시각 - 마지막시각;
+
+  if (마지막시각 > 0 && 지난시간 < 겹침막는시간) {
+    var 지난초 = Math.max(1, Math.round(지난시간 / 1000));
+    var 번호기억 = 넣은번호;
+
+    짧게떨기([40, 60, 40]);
+    확인창열기(
+      '방금 적립했습니다.<br>계속할까요?',
+      '뒷번호 <b>' + 번호기억 + '</b> 손님에게<br>' +
+      '<b>' + 지난초 + '초 전</b>에 이미 적립했어요. (현재 ' + 지금개수 + '개)<br>' +
+      '한 번 더 올리면 <b>' + (지금개수 + 1) + '개</b>가 됩니다.',
+      function () {
+        적립실행(번호기억);
+      },
+      '네, 계속할래요'
+    );
+    return;
+  }
+
+  적립실행(넣은번호);
+}
+
+/* 실제로 스탬프를 1개 올리는 부분 */
+function 적립실행(번호) {
+  var 지금개수 = 개수읽기(번호);
+  if (지금개수 >= 스탬프총개수) return;
+
+  var 새개수 = 지금개수 + 1;
+  개수쓰기(번호, 새개수);
+  마지막적립시각쓰기(번호, new Date().getTime());
+  마지막날짜쓰기(번호, 오늘날짜글자());      // 내려받기 파일에 넣을 날짜
+  오늘횟수바꾸기(1);
+  짧게떨기(25);
+
+  결과보이기(번호, 새개수, '+1 적립했어요');
+
+  if (새개수 >= 스탬프총개수) {
+    알림숨기기('적립알림');
+  } else {
+    알림보이기('적립알림', '초록',
+      '적립했어요! ' + (스탬프총개수 - 새개수) + '개 더 모으면 무료 음료예요.');
+  }
+}
+
+function 취소하기() {
+  if (넣은번호.length !== 4) {
+    알림보이기('적립알림', '빨강', '손님 번호 4자리를 모두 넣어 주세요.');
+    짧게떨기([40, 60, 40]);
+    return;
+  }
+
+  var 지금개수 = 개수읽기(넣은번호);
+
+  if (지금개수 <= 0) {
+    결과보이기(넣은번호, 0, '');
+    알림보이기('적립알림', '빨강', '이 손님은 스탬프가 0개예요. 뺄 것이 없어요.');
+    짧게떨기([40, 60, 40]);
+    return;
+  }
+
+  var 새개수 = 지금개수 - 1;
+  개수쓰기(넣은번호, 새개수);
+  마지막적립시각쓰기(넣은번호, 0);   // 되돌렸으니 '방금 적립' 기록도 지웁니다
+  오늘횟수바꾸기(-1);                 // 오늘 적립 횟수도 하나 줄여 줍니다
+
+  // 0개가 되면 수첩에서 완전히 빠지므로 날짜도 같이 지웁니다
+  if (새개수 === 0) 마지막날짜쓰기(넣은번호, '');
+  짧게떨기(25);
+
+  결과보이기(넣은번호, 새개수, '−1 되돌렸어요');
+  알림보이기('적립알림', '초록', '한 개를 뺐어요. 지금은 ' + 새개수 + '개예요.');
+}
+
+
+/* ===================================================================
+   [아] 결과 보여 주기
+   =================================================================== */
+
+function 결과보이기(번호, 개수, 변화글) {
+  document.getElementById('결과번호').textContent = '뒷번호 ' + 번호 + ' 손님';
+  document.getElementById('결과개수').innerHTML =
+    개수 + ' <span class="단위">/ ' + 스탬프총개수 + '개</span>';
+  document.getElementById('결과변화').textContent = 변화글;
+
+  작은스탬프그리기(개수);
+  document.getElementById('결과카드').classList.add('보임');
+
+  // 10개를 다 모았으면 무료 음료 알림 카드를 띄웁니다
+  if (개수 >= 스탬프총개수) {
+    document.getElementById('대상설명').innerHTML =
+      '뒷번호 <b>' + 번호 + '</b> 손님이 스탬프 10개를 모두 모았어요.<br>' +
+      '무료 음료를 드린 뒤 아래 버튼을 눌러 주세요.';
+    document.getElementById('대상카드').classList.add('보임');
+    짧게떨기([50, 80, 50, 80, 50]);
+  } else {
+    document.getElementById('대상카드').classList.remove('보임');
+  }
+}
+
+function 결과숨기기() {
+  document.getElementById('결과카드').classList.remove('보임');
+  document.getElementById('대상카드').classList.remove('보임');
+}
+
+function 작은스탬프그리기(개수) {
+  var 판 = document.getElementById('작은스탬프판');
+  판.innerHTML = '';
+
+  for (var i = 0; i < 스탬프총개수; i++) {
+    var 칸 = document.createElement('div');
+    칸.className = '작은동그라미 ' + (i < 개수 ? '채움' : '빈칸');
+    판.appendChild(칸);
+  }
+}
+
+
+/* ===================================================================
+   [자] 사용 완료 — 0개로 되돌리기
+   실수로 누르면 안 되니 한 번 더 물어봅니다.
+   =================================================================== */
+
+var 확인후할일 = null;
+
+function 확인창열기(제목, 설명, 할일, 진행글) {
+  document.getElementById('확인제목').innerHTML = 제목;
+  document.getElementById('확인설명').innerHTML = 설명;
+  document.getElementById('확인진행').textContent = 진행글 ? 진행글 : '네';
+  확인후할일 = 할일;
+  document.getElementById('덮개').classList.add('보임');
+}
+
+function 확인창닫기() {
+  document.getElementById('덮개').classList.remove('보임');
+  확인후할일 = null;
+}
+
+/* 사용 완료는 되돌릴 수 없어서 두 번 물어봅니다.
+   첫 번째 : 정말 음료를 드렸는지
+   두 번째 : 정말 0개로 되돌릴 것인지 */
+function 사용완료누름() {
+  var 번호 = 넣은번호;
+  if (번호.length !== 4) return;
+
+  // [첫 번째 확인]
+  확인창열기(
+    '무료 음료를<br>드리셨나요?',
+    '뒷번호 <b>' + 번호 + '</b> 손님입니다.<br>' +
+    '음료를 아직 안 드렸다면 [아니요]를 눌러 주세요.',
+    function () {
+
+      // [두 번째 확인] — 잠깐 뒤에 띄워야 창이 자연스럽게 바뀝니다
+      setTimeout(function () {
+        확인창열기(
+          '정말 0개로<br>되돌릴까요?',
+          '뒷번호 <b>' + 번호 + '</b> 손님의 스탬프 <b>10개가 모두 사라집니다.</b><br>' +
+          '한 번 되돌리면 <b>다시 살릴 수 없어요.</b>',
+          function () {
+            개수쓰기(번호, 0);
+            마지막적립시각쓰기(번호, 0);
+            마지막날짜쓰기(번호, '');
+            짧게떨기(30);
+            결과보이기(번호, 0, '사용 완료했어요');
+            알림보이기('적립알림', '초록',
+              '뒷번호 ' + 번호 + ' 손님의 스탬프를 0개로 되돌렸어요. 수고하셨어요!');
+          },
+          '네, 되돌릴게요'
+        );
+      }, 220);
+    },
+    '네, 드렸어요'
+  );
+}
+
+
+/* ===================================================================
+   [카-1] 손님 화면 되돌리기
+
+   수첩에 '지금 몇 시인지'를 적어 두면, 손님 화면이 1초마다 그것을 보고
+   "아, 사장님이 눌렀구나" 하고 첫 화면으로 돌아갑니다.
+   손님 화면이 열려 있지 않아도 아무 일도 일어나지 않으니 안전해요.
+   =================================================================== */
+
+function 손님화면되돌리기() {
+  try {
+    localStorage.setItem(저장이름_되돌리기, String(new Date().getTime()));
+  } catch (오류) {
+    알림보이기('적립알림', '빨강', '손님 화면에 신호를 보내지 못했어요. 손님 화면에서 [다른 번호 조회하기]를 눌러 주세요.');
+    return;
+  }
+
+  넣은번호 = '';
+  번호화면그리기();
+  결과숨기기();
+  짧게떨기(20);
+  알림보이기('적립알림', '초록', '손님 화면을 처음 화면으로 되돌렸어요. 다음 손님을 받으세요!');
+}
+
+
+/* ===================================================================
+   [카] 백업 — 스탬프를 파일 하나로 내보내고, 다시 되살리기
+
+   내보내기 : 지금 수첩에 있는 내용을 파일 하나로 만들어 저장합니다.
+   불러오기 : 그 파일을 골라서 수첩을 통째로 되살립니다.
+   =================================================================== */
+
+/* 수첩에 손님이 몇 명 들어 있는지 세어 봅니다 */
+function 손님수세기(전체) {
+  var 수 = 0;
+  for (var 열쇠 in 전체) {
+    if (Object.prototype.hasOwnProperty.call(전체, 열쇠)) 수++;
+  }
+  return 수;
+}
+
+/* 파일 하나를 만들어서 내려받게 해 주는 공통 부분 */
+function 파일로내려받기(글자, 파일이름, 종류) {
+  var 파일 = new Blob([글자], { type: 종류 });
+  var 주소 = URL.createObjectURL(파일);
+
+  var 고리 = document.createElement('a');
+  고리.href = 주소;
+  고리.download = 파일이름;
+  document.body.appendChild(고리);
+  고리.click();
+  document.body.removeChild(고리);
+
+  setTimeout(function () { URL.revokeObjectURL(주소); }, 1000);
+}
+
+/* 번호를 작은 순서대로 늘어놓습니다 (0001, 0002, … ) */
+function 번호목록만들기(전체) {
+  var 번호들 = [];
+  for (var 열쇠 in 전체) {
+    if (Object.prototype.hasOwnProperty.call(전체, 열쇠)) 번호들.push(열쇠);
+  }
+  번호들.sort();
+  return 번호들;
+}
+
+/* -------------------------------------------------------------------
+   엑셀로 열리는 파일(csv) 만들기
+
+   ※ 번호를 ="0123" 모양으로 감싸는 이유
+     그냥 0123 이라고 적으면 엑셀이 앞의 0을 지워서 123 으로 만들어 버려요.
+     이렇게 감싸 두면 0123 그대로 보입니다.
+   ------------------------------------------------------------------- */
+
+function 엑셀로내려받기() {
+  var 전체 = 스탬프전체불러오기();
+  var 번호들 = 번호목록만들기(전체);
+
+  if (번호들.length === 0) {
+    알림보이기('백업알림', '빨강', '아직 저장된 스탬프가 없어요. 적립을 한 번이라도 한 뒤에 내려받아 주세요.');
+    return;
+  }
+
+  var 줄들 = ['손님 번호,현재 스탬프 개수,마지막 적립 날짜'];
+
+  for (var i = 0; i < 번호들.length; i++) {
+    var 번호 = 번호들[i];
+    var 날짜 = 마지막날짜읽기(번호);
+    if (!날짜) 날짜 = '기록 없음';
+    줄들.push('="' + 번호 + '",' + 전체[번호] + ',' + 날짜);
+  }
+
+  /* 맨 앞의 ﻿ 는 '이 파일은 한글이에요' 하고 엑셀에게 알려 주는 표시입니다.
+     이게 없으면 엑셀에서 한글이 깨져 보여요. */
+  var 글자 = '﻿' + 줄들.join('\r\n') + '\r\n';
+
+  try {
+    파일로내려받기(글자, '브릿지커피_적립현황_' + 오늘날짜글자() + '.csv', 'text/csv;charset=utf-8');
+    짧게떨기(25);
+    알림보이기('백업알림', '초록',
+      '내려받았어요! 손님 ' + 번호들.length + '명 · 다운로드 폴더에서 두 번 클릭하면 엑셀로 열립니다.');
+  } catch (오류) {
+    알림보이기('백업알림', '빨강', '파일을 만들지 못했어요. 브라우저를 크롬으로 바꿔서 다시 해 보세요.');
+  }
+}
+
+/* -------------------------------------------------------------------
+   엑셀 파일(csv)을 다시 읽어 들이기
+   ------------------------------------------------------------------- */
+
+function 씨에스브이읽기(글자) {
+  글자 = String(글자).replace(/^﻿/, '');       // 맨 앞의 한글 표시를 떼어 냅니다
+
+  var 줄들 = 글자.split(/\r\n|\n|\r/);
+  var 스탬프 = {};
+  var 날짜들 = {};
+
+  for (var i = 0; i < 줄들.length; i++) {
+    var 줄 = 줄들[i].trim();
+    if (!줄) continue;
+
+    var 조각 = 줄.split(',');
+    if (조각.length < 2) continue;
+
+    // ="0123" 모양이면 따옴표와 = 를 떼어 냅니다
+    var 번호 = 조각[0].replace(/^="?/, '').replace(/"$/, '').replace(/"/g, '').trim();
+    if (!/^[0-9]{4}$/.test(번호)) continue;         // 맨 윗줄(머리글)은 여기서 걸러집니다
+
+    var 개수 = parseInt(조각[1], 10);
+    if (isNaN(개수) || 개수 <= 0) continue;
+
+    스탬프[번호] = Math.min(개수, 스탬프총개수);
+
+    var 날짜 = (조각[2] || '').trim();
+    if (/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(날짜)) 날짜들[번호] = 날짜;
+  }
+
+  return { 스탬프: 스탬프, 날짜: 날짜들 };
+}
+
+
+function 백업내보내기() {
+  var 전체 = 스탬프전체불러오기();
+  var 손님수 = 손님수세기(전체);
+
+  if (손님수 === 0) {
+    알림보이기('백업알림', '빨강', '아직 저장된 스탬프가 없어요. 적립을 한 번이라도 한 뒤에 백업해 주세요.');
+    return;
+  }
+
+  // 파일 안에 담을 내용
+  var 꾸러미 = {
+    종류: '브릿지커피 단골 적립 백업',
+    만든날: 오늘날짜글자(),
+    스탬프: 전체,
+    마지막날짜: 마지막날짜전체불러오기()
+  };
+
+  try {
+    파일로내려받기(JSON.stringify(꾸러미, null, 2),
+                   '브릿지커피_백업_' + 오늘날짜글자() + '.json',
+                   'application/json');
+
+    알림보이기('백업알림', '초록',
+      '백업 파일을 만들었어요. (손님 ' + 손님수 + '명) 이 파일을 카카오톡 「나에게 보내기」로 보내 두시면 안전해요.');
+    짧게떨기(25);
+  } catch (오류) {
+    알림보이기('백업알림', '빨강', '백업 파일을 만들지 못했어요. 브라우저를 크롬으로 바꿔서 다시 해 보세요.');
+  }
+}
+
+function 백업불러오기시작() {
+  var 파일칸 = document.getElementById('백업파일칸');
+  파일칸.value = '';       // 같은 파일을 다시 골라도 되게 비워 둡니다
+  파일칸.click();
+}
+
+function 백업파일골랐을때(사건) {
+  var 파일 = 사건.target.files && 사건.target.files[0];
+  if (!파일) return;
+
+  var 읽개 = new FileReader();
+
+  읽개.onerror = function () {
+    알림보이기('백업알림', '빨강', '파일을 읽지 못했어요. 다시 골라 주세요.');
+  };
+
+  읽개.onload = function () {
+    var 되살릴것 = {};
+    var 되살릴날짜 = {};
+    var 만든날 = '';
+    var 파일종류 = '';
+
+    var 파일이름 = String(파일.name || '');
+
+    if (/\.csv$/i.test(파일이름)) {
+      /* --- 엑셀 파일(csv)일 때 --- */
+      파일종류 = '엑셀 파일(csv)';
+      var 읽은것 = 씨에스브이읽기(읽개.result);
+      되살릴것 = 읽은것.스탬프;
+      되살릴날짜 = 읽은것.날짜;
+
+      // 파일 이름에 들어 있는 날짜를 꺼내 봅니다 (브릿지커피_적립현황_2026-07-28.csv)
+      var 찾은날짜 = 파일이름.match(/[0-9]{4}-[0-9]{2}-[0-9]{2}/);
+      만든날 = 찾은날짜 ? 찾은날짜[0] : '(날짜 모름)';
+
+    } else {
+      /* --- 백업 파일(json)일 때 --- */
+      파일종류 = '백업 파일(json)';
+
+      var 꾸러미 = null;
+      try { 꾸러미 = JSON.parse(읽개.result); } catch (오류) { 꾸러미 = null; }
+
+      if (!꾸러미 || !꾸러미.스탬프 || typeof 꾸러미.스탬프 !== 'object') {
+        알림보이기('백업알림', '빨강', '백업 파일이 아니거나 파일이 망가졌어요. 다른 파일을 골라 주세요.');
+        return;
+      }
+
+      // 이상한 값이 섞여 있을 수 있으니 번호 4자리와 개수만 걸러 냅니다
+      for (var 열쇠 in 꾸러미.스탬프) {
+        var 개수 = 꾸러미.스탬프[열쇠];
+        if (/^[0-9]{4}$/.test(열쇠) && typeof 개수 === 'number' && 개수 > 0) {
+          되살릴것[열쇠] = Math.min(Math.floor(개수), 스탬프총개수);
+        }
+      }
+
+      if (꾸러미.마지막날짜 && typeof 꾸러미.마지막날짜 === 'object') {
+        for (var 열쇠2 in 꾸러미.마지막날짜) {
+          var 날짜값 = 꾸러미.마지막날짜[열쇠2];
+          if (/^[0-9]{4}$/.test(열쇠2) && /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(날짜값)) {
+            되살릴날짜[열쇠2] = 날짜값;
+          }
+        }
+      }
+
+      만든날 = 꾸러미.만든날 ? String(꾸러미.만든날) : '(날짜 모름)';
+    }
+
+    var 되살릴손님수 = 손님수세기(되살릴것);
+    if (되살릴손님수 === 0) {
+      알림보이기('백업알림', '빨강',
+        '파일 안에 되살릴 스탬프가 없어요. 파일을 잘못 고르셨는지 확인해 주세요.');
+      return;
+    }
+
+    var 지금손님수 = 손님수세기(스탬프전체불러오기());
+
+    // [첫 번째 확인] 어떤 파일인지 보여 드립니다
+    확인창열기(
+      '이 파일로<br>되살릴까요?',
+      '고른 파일 : <b>' + 파일종류 + '</b><br>' +
+      '만든 날 : <b>' + 만든날 + '</b><br>' +
+      '들어 있는 손님 : <b>' + 되살릴손님수 + '명</b>',
+      function () {
+
+        // [두 번째 확인] 지금 것이 사라진다는 점을 분명히 알려 드립니다
+        setTimeout(function () {
+          확인창열기(
+            '지금 스탬프가<br>모두 사라집니다',
+            '지금 이 기기에 있는 손님 <b>' + 지금손님수 + '명</b>의 스탬프가<br>' +
+            '<b>모두 지워지고</b> 백업 파일 내용으로 바뀝니다.<br>' +
+            '한 번 되돌리면 <b>다시 살릴 수 없어요.</b>',
+            function () {
+              if (!스탬프전체저장하기(되살릴것)) return;
+
+              마지막날짜전체저장하기(되살릴날짜);
+              try { localStorage.removeItem(저장이름_마지막); } catch (오류) {}
+
+              넣은번호 = '';
+              번호화면그리기();
+              결과숨기기();
+              알림숨기기('적립알림');
+              짧게떨기(30);
+              알림보이기('백업알림', '초록',
+                '되살렸어요! 손님 ' + 되살릴손님수 + '명의 스탬프가 돌아왔습니다.');
+            },
+            '네, 되살릴게요'
+          );
+        }, 220);
+      },
+      '네, 이 파일이 맞아요'
+    );
+  };
+
+  읽개.readAsText(파일);
+}
+
+
+/* ===================================================================
+   [차] 버튼 연결하기
+   =================================================================== */
+
+// 잠금 화면 키패드
+키패드만들기(
+  '잠금키패드',
+  비밀번호숫자누름,
+  function () {                       // ⌫ 지우기
+    넣은비밀번호 = 넣은비밀번호.slice(0, -1);
+    알림숨기기('잠금알림');
+    비밀번호점그리기();
+  },
+  function () {                       // 전체 지움
+    넣은비밀번호 = '';
+    알림숨기기('잠금알림');
+    비밀번호점그리기();
+  }
+);
+
+// 적립 화면 키패드
+키패드만들기('적립키패드', 번호숫자누름, 번호한글자지움, 번호전체지움);
+
+document.getElementById('적립버튼').onclick   = 적립하기;
+document.getElementById('취소버튼').onclick   = 취소하기;
+document.getElementById('사용완료버튼').onclick = 사용완료누름;
+
+document.getElementById('손님화면되돌리기버튼').onclick = 손님화면되돌리기;
+
+document.getElementById('엑셀내려받기버튼').onclick = 엑셀로내려받기;
+document.getElementById('내보내기버튼').onclick = 백업내보내기;
+document.getElementById('불러오기버튼').onclick = 백업불러오기시작;
+document.getElementById('백업파일칸').onchange = 백업파일골랐을때;
+
+document.getElementById('확인그만').onclick = 확인창닫기;
+document.getElementById('확인진행').onclick = function () {
+  var 할일 = 확인후할일;
+  확인창닫기();
+  if (할일) 할일();
+};
+
+document.getElementById('잠그기버튼').onclick = function () {
+  넣은비밀번호 = '';
+  넣은번호 = '';
+  비밀번호점그리기();
+  알림숨기기('잠금알림');
+  화면보이기('화면-잠금');
+};
+
+// 처음 열었을 때 준비
+비밀번호점그리기();
+번호화면그리기();
+오늘화면새로그리기();
+</script>
+
+</body>
+</html>
